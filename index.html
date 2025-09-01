@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jadwal Sekolah</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Animasi FadeIn */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn { animation: fadeIn 0.8s ease-in-out; }
+
+    /* Animasi SlideIn */
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .animate-slideIn { animation: slideIn 0.6s ease-out forwards; }
+
+    /* Animasi bintang berkelip */
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      opacity: 0.8;
+      animation: twinkle infinite;
+    }
+  </style>
+</head>
+<body id="body" class="relative bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-300 min-h-screen flex items-center justify-center p-6 transition duration-700 ease-in-out overflow-hidden">
+
+  <!-- Latar Bintang -->
+  <div id="stars-container" class="hidden absolute inset-0 pointer-events-none"></div>
+
+  <!-- Card -->
+  <div id="card" class="relative backdrop-blur-xl bg-white/70 dark:bg-gray-800/70 shadow-2xl rounded-3xl w-full max-w-md p-6 animate-fadeIn transition duration-700 ease-in-out z-10">
+    <h1 id="title" class="text-3xl font-extrabold text-indigo-900 dark:text-indigo-200 text-center mb-6 tracking-wide drop-shadow">📚 Jadwal Sekolah</h1>
+    
+    <!-- Toggle Siang/Malam -->
+    <div class="flex justify-center mb-6">
+      <div id="toggleTrack" class="w-24 h-12 bg-gray-300 dark:bg-gray-700 rounded-full relative cursor-pointer">
+        <div id="toggleThumb" class="w-10 h-10 bg-yellow-400 dark:bg-indigo-600 rounded-full shadow-md absolute top-1 left-1 flex items-center justify-center text-white font-bold transition-all duration-500 ease-in-out select-none">
+          🌞
+        </div>
+      </div>
+    </div>
+
+    <!-- Dropdown -->
+    <label for="hari" class="block mb-2 text-gray-700 dark:text-gray-200 font-semibold">Pilih Hari:</label>
+    <select id="hari" onchange="tampilkanJadwal()" 
+      class="w-full p-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-400 mb-6 transition duration-500 ease-in-out hover:scale-[1.02] dark:bg-gray-800 dark:text-gray-100">
+      <option value="">-- Pilih Hari --</option>
+      <option value="Senin">Senin</option>
+      <option value="Selasa">Selasa</option>
+      <option value="Rabu">Rabu</option>
+      <option value="Kamis">Kamis</option>
+      <option value="Jumat">Jumat</option>
+      <option value="Sabtu">Sabtu</option>
+    </select>
+
+    <!-- Box Jadwal -->
+    <div id="jadwalBox" class="hidden">
+      <h2 id="judulHari" class="text-2xl font-bold text-purple-800 dark:text-purple-300 mb-4 text-center animate-fadeIn"></h2>
+      <ul id="daftarJadwal" class="space-y-3"></ul>
+
+      <!-- Tombol Reset -->
+      <button onclick="resetJadwal()" 
+        class="mt-6 w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold shadow-lg hover:from-indigo-700 hover:to-purple-700 transition duration-500 ease-in-out hover:scale-[1.03] hover:shadow-xl">
+         Reset Pilihan
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const jadwal = {
+      "Senin": ["Upacara", "Literasi", "PAI", "B. Inggris", "MTK"],
+      "Selasa": ["BK", "IPS", "B. Indo", "MTK"],
+      "Rabu": ["IPA", "PPKN", "Prakarya", "IPS"],
+      "Kamis": ["B. Inggris", "B. Jawa", "Olahraga", "IPA"],
+      "Jumat": ["Pembiasaan", "IPA", "Informatika (10.50)"],
+      "Sabtu": ["B. Indo (09.15)"]
+    };
+
+    const mapHari = {1: "Senin", 2: "Selasa", 3: "Rabu", 4: "Kamis", 5: "Jumat", 6: "Sabtu"};
+
+    // Tampilkan otomatis jadwal hari ini
+    window.onload = () => {
+      const today = new Date().getDay();
+      if (mapHari[today]) {
+        document.getElementById("hari").value = mapHari[today];
+        tampilkanJadwal();
+      }
+    };
+
+    function tampilkanJadwal() {
+      const hari = document.getElementById("hari").value;
+      const box = document.getElementById("jadwalBox");
+      const judul = document.getElementById("judulHari");
+      const daftar = document.getElementById("daftarJadwal");
+
+      if (hari) {
+        judul.textContent = "📅 Jadwal " + hari;
+        daftar.innerHTML = "";
+        jadwal[hari].forEach((mapel, i) => {
+          let li = document.createElement("li");
+          li.innerHTML = `
+            <div class="p-4 bg-white/90 dark:bg-gray-900 rounded-xl border border-indigo-200 text-indigo-800 dark:text-indigo-200 font-medium shadow-md flex items-center gap-3
+              hover:scale-[1.05] hover:shadow-xl transition duration-500 ease-in-out animate-slideIn" style="animation-delay:${i * 0.15}s">
+              <span class="px-3 py-1 rounded-full bg-gradient-to-r from-indigo-400 to-purple-500 text-white text-sm font-bold shadow">
+                ${i+1}
+              </span>
+              ${mapel}
+            </div>`;
+          daftar.appendChild(li);
+        });
+        box.classList.remove("hidden");
+      } else {
+        box.classList.add("hidden");
+      }
+    }
+
+    function resetJadwal() {
+      document.getElementById("hari").value = "";
+      document.getElementById("jadwalBox").classList.add("hidden");
+    }
+
+    // Toggle siang/malam dengan drag/klik
+    const toggleTrack = document.getElementById("toggleTrack");
+    const toggleThumb = document.getElementById("toggleThumb");
+    const starsContainer = document.getElementById("stars-container");
+    let isDark = false;
+
+    toggleTrack.addEventListener("click", () => {
+      isDark = !isDark;
+      document.documentElement.classList.toggle("dark", isDark);
+      toggleThumb.style.transform = isDark ? "translateX(48px)" : "translateX(0px)";
+      toggleThumb.innerHTML = isDark ? "🌙" : "🌞";
+      toggleThumb.classList.toggle("bg-yellow-400", !isDark);
+      toggleThumb.classList.toggle("bg-indigo-600", isDark);
+
+      // Bintang muncul saat malam
+      if (isDark) {
+        starsContainer.classList.remove("hidden");
+        generateStars(50);
+      } else {
+        starsContainer.classList.add("hidden");
+        starsContainer.innerHTML = "";
+      }
+    });
+
+    // Buat bintang random
+    function generateStars(count) {
+      starsContainer.innerHTML = "";
+      for (let i = 0; i < count; i++) {
+        const star = document.createElement("div");
+        const size = Math.random() * 3 + 2;
+        const duration = Math.random() * 2 + 1.5;
+        star.className = "star";
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.top = `${Math.random() * 100}%`;
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.animationDuration = `${duration}s`;
+        starsContainer.appendChild(star);
+      }
+    }
+  </script>
+</body>
+</html>
